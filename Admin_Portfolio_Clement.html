@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Portfolio Clément Ferry Mama</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1B4F8A;--blue-light:#EEF4FB;
+  --orange:#E05A1E;--orange-light:#FEF3EC;
+  --green:#059669;--green-light:#D1FAE5;
+  --red:#DC2626;--red-light:#FEE2E2;
+  --dark:#0D1B2A;--gray:#6B7280;--gray-light:#F8F9FA;
+  --border:#E5E9EF;--white:#fff;
+  --sidebar:220px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gray-light);color:var(--dark);display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--dark);color:white;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:10}
+.sidebar-logo{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-logo h1{font-size:0.95rem;font-weight:700;line-height:1.3}
+.sidebar-logo p{font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:2px}
+.sidebar-nav{padding:1rem 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 1.25rem;font-size:0.85rem;color:rgba(255,255,255,0.6);cursor:pointer;transition:all 0.15s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:white}
+.nav-item.active{background:rgba(27,79,138,0.4);color:white;border-left-color:var(--blue)}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.08)}
+.preview-btn{display:block;text-align:center;background:var(--blue);color:white;padding:9px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:background 0.2s}
+.preview-btn:hover{background:#163f6e}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;padding:2rem;max-width:calc(100% - var(--sidebar))}
+.page{display:none}
+.page.active{display:block}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.topbar h2{font-size:1.3rem;font-weight:700}
+.topbar p{font-size:0.85rem;color:var(--gray);margin-top:2px}
+
+/* CARDS */
+.card{background:white;border-radius:12px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem}
+
+/* FORM */
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:0.8rem;font-weight:600;color:var(--gray);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+.field input,.field textarea,.field select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--dark);transition:border-color 0.2s;background:white}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--blue)}
+.field textarea{resize:vertical;min-height:80px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem}
+
+/* BUTTONS */
+.btn{padding:8px 18px;border-radius:7px;font-size:0.85rem;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
+.btn-primary{background:var(--blue);color:white}
+.btn-primary:hover{background:#163f6e}
+.btn-success{background:var(--green);color:white}
+.btn-success:hover{background:#047857}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.btn-danger:hover{background:var(--red);color:white}
+.btn-orange{background:var(--orange);color:white}
+.btn-orange:hover{background:#b84a18}
+.btn-gray{background:var(--gray-light);color:var(--gray);border:1px solid var(--border)}
+.btn-gray:hover{background:#e5e7eb}
+
+/* LIST ITEMS */
+.list-item{background:white;border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:flex-start;gap:1rem}
+.list-item-body{flex:1}
+.list-item-body h4{font-size:0.92rem;font-weight:600;margin-bottom:3px}
+.list-item-body p{font-size:0.8rem;color:var(--gray);line-height:1.5}
+.list-item-actions{display:flex;gap:6px;flex-shrink:0}
+.list-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.icon-blue{background:var(--blue-light)}.icon-orange{background:var(--orange-light)}.icon-green{background:var(--green-light)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:1.5rem}
+.modal-bg.open{display:flex}
+.modal{background:white;border-radius:16px;padding:1.75rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:1.05rem;font-weight:700;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-orange{background:var(--orange-light);color:var(--orange)}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-yellow{background:#FEF3C7;color:#92400E}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:white;border-radius:10px;border:1px solid var(--border);padding:1.25rem;text-align:center}
+.stat-val{font-size:2rem;font-weight:800;color:var(--blue)}
+.stat-label{font-size:0.78rem;color:var(--gray);margin-top:3px}
+
+/* ALERT */
+.alert{padding:10px 14px;border-radius:8px;font-size:0.83rem;margin-bottom:1rem;display:none}
+.alert.success{background:var(--green-light);color:#065F46;border:1px solid #6EE7B7;display:block}
+.alert.error{background:var(--red-light);color:var(--red);border:1px solid #fca5a5;display:block}
+
+/* PROFILE IMG */
+.profile-img-wrap{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem}
+.profile-thumb{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--border)}
+
+/* SECTION DIVIDER */
+.section-divider{font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin:1.5rem 0 1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
+
+.empty-state{text-align:center;padding:3rem;color:var(--gray)}
+.empty-state .empty-icon{font-size:2.5rem;margin-bottom:0.75rem}
+.empty-state p{font-size:0.88rem}
+
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .sidebar-logo,.sidebar-footer,.nav-item span{display:none}
+  .main{margin-left:60px}
+  .field-row,.field-row-3{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>Portfolio Admin</h1>
+    <p>Clément Ferry Mama</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span><span>Tableau de bord</span></div>
+    <div class="nav-item" onclick="showPage('profile')"><span class="nav-icon">👤</span><span>Mon profil</span></div>
+    <div class="nav-item" onclick="showPage('projects')"><span class="nav-icon">🚀</span><span>Projets</span></div>
+    <div class="nav-item" onclick="showPage('gallery')"><span class="nav-icon">🖼️</span><span>Galerie</span></div>
+    <div class="nav-item" onclick="showPage('certifications')"><span class="nav-icon">🎓</span><span>Certifications</span></div>
+    <div class="nav-item" onclick="showPage('cv')"><span class="nav-icon">📄</span><span>CV</span></div>
+    <div class="nav-item" onclick="showPage('skills')"><span class="nav-icon">⚡</span><span>Compétences</span></div>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="Portfolio_Clement_Ferry_Mama_v4.html" target="_blank" class="preview-btn">👁 Voir le site</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="topbar">
+      <div><h2>Tableau de bord</h2><p>Vue d'ensemble de ton portfolio</p></div>
+      <button class="btn btn-success" onclick="saveAll()">💾 Sauvegarder tout</button>
+    </div>
+    <div id="alert-global" class="alert"></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="stat-projects">0</div><div class="stat-label">Projets</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-gallery">0</div><div class="stat-label">Galerie</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-certs">0</div><div class="stat-label">Certifications</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-skills">0</div><div class="stat-label">Compétences</div></div>
+    </div>
+    <div class="card">
+      <div class="section-divider">Actions rapides</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="showPage('projects');openProjectModal()">+ Nouveau projet</button>
+        <button class="btn btn-orange" onclick="showPage('gallery');openGalleryModal()">+ Image galerie</button>
+        <button class="btn btn-gray" onclick="showPage('certifications');openCertModal()">+ Certification</button>
+        <button class="btn btn-success" onclick="saveAll()">💾 Sauvegarder</button>
+        <button class="btn btn-danger" onclick="resetAll()">🗑 Réinitialiser</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-divider">Comment ça marche ?</div>
+      <div style="font-size:0.85rem;color:var(--gray);line-height:1.8">
+        <p>1️⃣ <strong>Modifie</strong> ton profil, tes projets, ta galerie via les menus à gauche.</p>
+        <p>2️⃣ <strong>Sauvegarde</strong> avec le bouton vert — les données sont stockées dans ton navigateur.</p>
+        <p>3️⃣ <strong>Visualise</strong> avec le bouton "Voir le site" — le portfolio se met à jour automatiquement.</p>
+        <p>4️⃣ Pour mettre en ligne : glisse les deux fichiers HTML sur <strong>GitHub Pages</strong> ou <strong>Netlify</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFIL -->
+  <div class="page" id="page-profile">
+    <div class="topbar"><div><h2>Mon profil</h2><p>Informations personnelles et présentation</p></div><button class="btn btn-success" onclick="saveProfile()">💾 Sauvegarder</button></div>
+    <div id="alert-profile" class="alert"></div>
+    <div class="card">
+      <div class="section-divider">Identité</div>
+      <div class="field-row">
+        <div class="field"><label>Prénom & Nom</label><input id="p-name" type="text" placeholder="Clément Ferry Mama"></div>
+        <div class="field"><label>Titre principal</label><input id="p-title" type="text" placeholder="Data Engineer · Profil hybride Data × Digital"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Localisation</label><input id="p-location" type="text" placeholder="Île-de-France"></div>
+        <div class="field"><label>Badge disponibilité</label><input id="p-availability" type="text" placeholder="Disponible déc. 2026"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-divider">Contact</div>
+      <div class="field-row">
+        <div class="field"><label>Email</label><input id="p-email" type="email" placeholder="clementmamapro@gmail.com"></div>
+        <div class="field"><label>Téléphone</label><input id="p-phone" type="text" placeholder="07 45 04 57 37"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>URL LinkedIn</label><input id="p-linkedin" type="url" placeholder="https://linkedin.com/in/..."></div>
+        <div class="field"><label>URL GitHub</label><input id="p-github" type="url" placeholder="https://github.com/..."></div>
+      </div>
+      <div class="field"><label>Endpoint Formspree (formulaire contact)</label><input id="p-formspree" type="text" placeholder="https://formspree.io/f/XXXXXXXX"><small style="font-size:0.75rem;color:var(--gray);margin-top:4px;display:block">Créé ton compte sur <a href="https://formspree.io" target="_blank" style="color:var(--blue)">formspree.io</a> → New Form → copie l'URL ici</small></div>
+    </div>
+    <div class="card">
+      <div class="section-divider">Pitch / Présentation</div>
+      <div class="field"><label>Texte accroche hero</label><textarea id="p-pitch" rows="3" placeholder="Ex-marketeur reconverti Data Engineer par conviction..."></textarea></div>
+      <div class="field"><label>Types de contrat recherchés</label><input id="p-contracts" type="text" placeholder="CDI, CDD ou freelance"></div>
+    </div>
+  </div>
+
+  <!-- PROJETS -->
+  <div class="page" id="page-projects">
+    <div class="topbar"><div><h2>Projets</h2><p>Gère tes projets Data et Digital</p></div><button class="btn btn-primary" onclick="openProjectModal()">+ Nouveau projet</button></div>
+    <div id="alert-projects" class="alert"></div>
+    <div id="projects-list"></div>
+  </div>
+
+  <!-- GALERIE -->
+  <div class="page" id="page-gallery">
+    <div class="topbar"><div><h2>Galerie</h2><p>Images et visuels de tes réalisations</p></div><button class="btn btn-orange" onclick="openGalleryModal()">+ Ajouter une image</button></div>
+    <div id="alert-gallery" class="alert"></div>
+    <div id="gallery-list"></div>
+  </div>
+
+  <!-- CERTIFICATIONS -->
+  <div class="page" id="page-certifications">
+    <div class="topbar"><div><h2>Certifications</h2><p>Diplômes et certifications</p></div><button class="btn btn-primary" onclick="openCertModal()">+ Ajouter</button></div>
+    <div id="alert-certs" class="alert"></div>
+    <div id="certs-list"></div>
+  </div>
+
+  <!-- CV -->
+  <div class="page" id="page-cv">
+    <div class="topbar"><div><h2>Mon CV</h2><p>Gère le bouton de téléchargement de ton CV</p></div></div>
+    <div id="alert-cv" class="alert"></div>
+    <div class="card">
+      <div class="section-divider">Fichier CV</div>
+      <div class="field">
+        <label>URL de ton CV (lien direct vers le PDF)</label>
+        <input id="cv-url" type="url" placeholder="https://drive.google.com/... ou https://ton-site.com/CV_Clement.pdf">
+        <small style="font-size:0.75rem;color:var(--gray);margin-top:4px;display:block">
+          💡 Options gratuites : Google Drive (partage public → lien direct) · GitHub (upload le PDF dans le repo) · Dropbox
+        </small>
+      </div>
+      <div class="field">
+        <label>Nom du fichier affiché</label>
+        <input id="cv-filename" type="text" placeholder="CV_Clement_Ferry_Mama.pdf">
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:8px">
+        <button class="btn btn-success" onclick="saveCV()">💾 Sauvegarder</button>
+        <button class="btn btn-gray" id="cv-test-btn" onclick="testCV()" style="display:none">🔗 Tester le lien</button>
+      </div>
+    </div>
+    <div class="card" style="background:var(--blue-light);border-color:#c8dcf0">
+      <div class="section-divider" style="color:var(--blue)">Comment héberger ton CV gratuitement</div>
+      <div style="font-size:0.84rem;color:var(--dark);line-height:1.9">
+        <p><strong>Option 1 — Google Drive (le plus simple) :</strong><br>Upload → Clic droit → Obtenir le lien → Changer "Accès limité" en "Toute personne avec le lien" → Copier l'URL</p>
+        <p style="margin-top:0.75rem"><strong>Option 2 — GitHub (le plus propre) :</strong><br>Crée un repo → Upload le PDF → Clique dessus → "Raw" → Copie l'URL</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPÉTENCES -->
+  <div class="page" id="page-skills">
+    <div class="topbar"><div><h2>Compétences</h2><p>Tes groupes de compétences et niveaux</p></div><button class="btn btn-primary" onclick="openSkillModal()">+ Ajouter une compétence</button></div>
+    <div id="alert-skills" class="alert"></div>
+    <div id="skills-list"></div>
+  </div>
+
+</main>
+
+<!-- MODAL PROJET -->
+<div class="modal-bg" id="modal-project">
+  <div class="modal">
+    <h3 id="modal-project-title">Nouveau projet</h3>
+    <input type="hidden" id="project-edit-id">
+    <div class="field-row">
+      <div class="field"><label>Titre</label><input id="proj-title" type="text" placeholder="Nom du projet"></div>
+      <div class="field"><label>Thématique</label>
+        <select id="proj-theme">
+          <option value="etl">ETL & Pipelines</option>
+          <option value="bi">BI & DataViz</option>
+          <option value="auto">Automatisation</option>
+          <option value="infra">Infra & Orchestration</option>
+          <option value="marketing">Digital & Marketing</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="proj-desc" rows="3" placeholder="Décris le projet en 2-3 phrases..."></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Stack (séparée par des virgules)</label><input id="proj-stack" type="text" placeholder="Python, Pandas, ETL"></div>
+      <div class="field"><label>Lien GitHub (optionnel)</label><input id="proj-link" type="url" placeholder="https://github.com/..."></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Icône (emoji)</label><input id="proj-icon" type="text" placeholder="🚀" maxlength="2" style="font-size:1.3rem;text-align:center"></div>
+      <div class="field"><label>Badge "Nouveau" ?</label>
+        <select id="proj-new"><option value="false">Non</option><option value="true">Oui</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('modal-project')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProject()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GALERIE -->
+<div class="modal-bg" id="modal-gallery">
+  <div class="modal">
+    <h3 id="modal-gallery-title">Nouveau visuel</h3>
+    <input type="hidden" id="gallery-edit-id">
+    <div class="field"><label>Titre</label><input id="gal-title" type="text" placeholder="Dashboard KPIs Power BI"></div>
+    <div class="field"><label>Sous-titre / contexte</label><input id="gal-sub" type="text" placeholder="Territoire LAJ — SNCF Voyageurs"></div>
+    <div class="field"><label>Description complète (pour la lightbox)</label><textarea id="gal-desc" rows="3"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Catégorie</label>
+        <select id="gal-cat">
+          <option value="data">Data & BI</option>
+          <option value="app">Application</option>
+          <option value="digital">Digital</option>
+        </select>
+      </div>
+      <div class="field"><label>Étiquette affichée</label><input id="gal-tag" type="text" placeholder="Data & BI"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Icône (emoji)</label><input id="gal-icon" type="text" placeholder="📊" maxlength="2" style="font-size:1.3rem;text-align:center"></div>
+      <div class="field"><label>Couleur fond</label>
+        <select id="gal-color">
+          <option value="thumb-blue">Bleu</option>
+          <option value="thumb-purple">Violet</option>
+          <option value="thumb-green">Vert</option>
+          <option value="thumb-orange">Orange</option>
+          <option value="thumb-cyan">Cyan</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Stack (séparée par des virgules)</label><input id="gal-stack" type="text" placeholder="Power BI, DAX, Power Query"></div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('modal-gallery')">Annuler</button>
+      <button class="btn btn-orange" onclick="saveGalleryItem()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CERT -->
+<div class="modal-bg" id="modal-cert">
+  <div class="modal">
+    <h3 id="modal-cert-title">Nouvelle certification</h3>
+    <input type="hidden" id="cert-edit-id">
+    <div class="field"><label>Titre</label><input id="cert-title" type="text" placeholder="Microsoft PL-300 — Power BI"></div>
+    <div class="field-row">
+      <div class="field"><label>Organisme</label><input id="cert-issuer" type="text" placeholder="Microsoft"></div>
+      <div class="field"><label>Année / Période</label><input id="cert-year" type="text" placeholder="2025"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Statut</label>
+        <select id="cert-status">
+          <option value="done">Obtenu</option>
+          <option value="wip">En cours / Prévu</option>
+        </select>
+      </div>
+      <div class="field"><label>Icône (emoji)</label><input id="cert-icon" type="text" placeholder="🎓" maxlength="2" style="font-size:1.3rem;text-align:center"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('modal-cert')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCert()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SKILL -->
+<div class="modal-bg" id="modal-skill">
+  <div class="modal">
+    <h3>Ajouter une compétence</h3>
+    <div class="field"><label>Nom de la compétence</label><input id="skill-name" type="text" placeholder="Apache Airflow"></div>
+    <div class="field-row">
+      <div class="field"><label>Groupe</label>
+        <select id="skill-group">
+          <option value="data">Langages & Data</option>
+          <option value="infra">Infra & Orchestration</option>
+          <option value="bi">BI & Visualisation</option>
+          <option value="lowcode">Low-code & Digital</option>
+          <option value="db">BDD & Concepts</option>
+          <option value="soft">Soft skills</option>
+        </select>
+      </div>
+      <div class="field"><label>Niveau (0-100)</label><input id="skill-level" type="number" min="0" max="100" placeholder="70"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('modal-skill')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSkill()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA DEFAULTS ──────────────────────────────────────────────
+const DEFAULTS = {
+  profile:{name:"Clément Ferry Mama",title:"Data Engineer · Profil hybride Data × Digital",location:"Île-de-France",availability:"Disponible déc. 2026",email:"clementmamapro@gmail.com",phone:"07 45 04 57 37",linkedin:"https://www.linkedin.com/in/clément-ferry-mama-681895212",github:"https://github.com/clementmamapro-creator",formspree:"",pitch:"Ex-marketeur reconverti Data Engineer par conviction. 2 ans chez SNCF Voyageurs — une double culture technique et métier unique.",contracts:"CDI, CDD ou freelance"},
+  cv:{url:"",filename:"CV_Clement_Ferry_Mama.pdf"},
+  projects:[
+    {id:1,title:"Pipeline Airflow & Docker",theme:"infra",desc:"Orchestration d'un pipeline ETL avec Apache Airflow, conteneurisé sous Docker. DAGs Python.",stack:"Apache Airflow,Docker,Python,DAGs",link:"https://github.com/clementmamapro-creator",icon:"🐳",isNew:true},
+    {id:2,title:"titanic_project",theme:"etl",desc:"Pipeline ETL end-to-end : chargement CSV, nettoyage, feature engineering, export.",stack:"Python,Pandas,ETL",link:"https://github.com/clementmamapro-creator",icon:"🔧",isNew:false},
+    {id:3,title:"sncf_transilien_project",theme:"etl",desc:"Analyse de fréquentation des gares SNCF Voyageurs (lignes L, A Ouest, J).",stack:"Python,Pandas,DataViz",link:"https://github.com/clementmamapro-creator",icon:"🚂",isNew:false},
+    {id:4,title:"Dashboards KPIs — SNCF LAJ",theme:"bi",desc:"Dashboards Power BI (modélisation étoile, DAX) pour le pilotage des KPIs opérationnels.",stack:"Power BI,DAX,Power Query",link:"",icon:"📈",isNew:false},
+    {id:5,title:"App collecte terrain — Power Apps",theme:"auto",desc:"Application Power Apps collecte terrain sur tablette, pipeline Python/Power Automate → Power BI.",stack:"Power Apps,Power Automate,Power BI",link:"",icon:"⚡",isNew:false},
+    {id:6,title:"Campagnes Social Media",theme:"marketing",desc:"Pilotage Meta Ads, Google Ads, TikTok Ads. Segmentation BDD, reporting direction.",stack:"Meta Ads,Google Ads,Analytics",link:"",icon:"📣",isNew:false},
+  ],
+  gallery:[
+    {id:1,title:"Dashboard KPIs Power BI",sub:"Territoire LAJ — SNCF Voyageurs",desc:"Tableau de bord Power BI développé pour le Territoire LAJ. Modélisation étoile, DAX, Power Query.",cat:"data",tag:"Data & BI",icon:"📊",color:"thumb-purple",stack:"Power BI,DAX,Power Query"},
+    {id:2,title:"App collecte terrain",sub:"Power Apps — SNCF Voyageurs",desc:"Application Power Apps déployée auprès des équipes SNCF.",cat:"app",tag:"Application",icon:"📱",color:"thumb-green",stack:"Power Apps,Power Automate"},
+    {id:3,title:"Pipeline Airflow & Docker",sub:"Projet GitHub",desc:"Orchestration ETL avec Airflow conteneurisé Docker.",cat:"data",tag:"Infra",icon:"🐳",color:"thumb-cyan",stack:"Airflow,Docker,Python"},
+    {id:4,title:"JO Paris 2024",sub:"Volontaire — SNCF",desc:"Volontaire information JO/JP Paris 2024, gares du Nord et Saint-Denis.",cat:"digital",tag:"Événementiel",icon:"🏅",color:"thumb-orange",stack:"Coordination,Communication"},
+  ],
+  certifications:[
+    {id:1,title:"Mastère Data Engineer",issuer:"DSP Digital School of Paris",year:"2025 — 2026",status:"wip",icon:"🎓"},
+    {id:2,title:"Mastère Expert Marketing Digital",issuer:"DSP Digital School of Paris",year:"2023 — 2025",status:"done",icon:"🎓"},
+    {id:3,title:"Microsoft PL-300 — Power BI",issuer:"Microsoft",year:"À venir",status:"wip",icon:"🏅"},
+    {id:4,title:"AWS Cloud Practitioner",issuer:"Amazon Web Services",year:"À venir",status:"wip",icon:"☁️"},
+  ],
+  skills:[
+    {id:1,name:"Python (Pandas, NumPy)",group:"data",level:80},
+    {id:2,name:"SQL",group:"data",level:75},
+    {id:3,name:"ETL / ELT",group:"data",level:70},
+    {id:4,name:"Docker",group:"infra",level:65},
+    {id:5,name:"Apache Airflow",group:"infra",level:50},
+    {id:6,name:"Hadoop / HDFS",group:"infra",level:45},
+    {id:7,name:"Power BI (DAX, Power Query)",group:"bi",level:85},
+    {id:8,name:"Excel avancé",group:"bi",level:80},
+    {id:9,name:"Power Apps",group:"lowcode",level:80},
+    {id:10,name:"Power Automate",group:"lowcode",level:75},
+    {id:11,name:"Vulgarisation data",group:"soft",level:90},
+    {id:12,name:"Gestion de projet",group:"soft",level:85},
+  ]
+};
+
+// ── STATE ──────────────────────────────────────────────────────
+let state = JSON.parse(JSON.stringify(DEFAULTS));
+
+function load(){
+  const saved = localStorage.getItem('portfolio_data');
+  if(saved){ try{ state = JSON.parse(saved); }catch(e){} }
+  fillProfile();
+  fillCV();
+  renderProjects();
+  renderGallery();
+  renderCerts();
+  renderSkills();
+  updateStats();
+}
+
+function save(){
+  localStorage.setItem('portfolio_data', JSON.stringify(state));
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── ALERT ──────────────────────────────────────────────────────
+function showAlert(id, msg, type='success'){
+  const el = document.getElementById('alert-'+id);
+  if(!el) return;
+  el.textContent = msg;
+  el.className = 'alert '+type;
+  setTimeout(()=>{ el.className='alert'; }, 3000);
+}
+
+// ── MODAL ──────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e=>{ if(e.target.classList.contains('modal-bg')) e.target.classList.remove('open'); });
+
+// ── STATS ──────────────────────────────────────────────────────
+function updateStats(){
+  document.getElementById('stat-projects').textContent = state.projects.length;
+  document.getElementById('stat-gallery').textContent = state.gallery.length;
+  document.getElementById('stat-certs').textContent = state.certifications.length;
+  document.getElementById('stat-skills').textContent = state.skills.length;
+}
+
+// ── PROFILE ────────────────────────────────────────────────────
+function fillProfile(){
+  const p = state.profile;
+  document.getElementById('p-name').value = p.name||'';
+  document.getElementById('p-title').value = p.title||'';
+  document.getElementById('p-location').value = p.location||'';
+  document.getElementById('p-availability').value = p.availability||'';
+  document.getElementById('p-email').value = p.email||'';
+  document.getElementById('p-phone').value = p.phone||'';
+  document.getElementById('p-linkedin').value = p.linkedin||'';
+  document.getElementById('p-github').value = p.github||'';
+  document.getElementById('p-formspree').value = p.formspree||'';
+  document.getElementById('p-pitch').value = p.pitch||'';
+  document.getElementById('p-contracts').value = p.contracts||'';
+}
+
+function saveProfile(){
+  state.profile = {
+    name: document.getElementById('p-name').value,
+    title: document.getElementById('p-title').value,
+    location: document.getElementById('p-location').value,
+    availability: document.getElementById('p-availability').value,
+    email: document.getElementById('p-email').value,
+    phone: document.getElementById('p-phone').value,
+    linkedin: document.getElementById('p-linkedin').value,
+    github: document.getElementById('p-github').value,
+    formspree: document.getElementById('p-formspree').value,
+    pitch: document.getElementById('p-pitch').value,
+    contracts: document.getElementById('p-contracts').value,
+  };
+  save(); showAlert('profile', '✅ Profil sauvegardé !');
+}
+
+// ── CV ──────────────────────────────────────────────────────────
+function fillCV(){
+  document.getElementById('cv-url').value = state.cv.url||'';
+  document.getElementById('cv-filename').value = state.cv.filename||'';
+  if(state.cv.url) document.getElementById('cv-test-btn').style.display='inline-block';
+}
+function saveCV(){
+  state.cv = { url: document.getElementById('cv-url').value, filename: document.getElementById('cv-filename').value };
+  save();
+  if(state.cv.url) document.getElementById('cv-test-btn').style.display='inline-block';
+  showAlert('cv','✅ CV sauvegardé !');
+}
+function testCV(){ if(state.cv.url) window.open(state.cv.url,'_blank'); }
+
+// ── PROJECTS ────────────────────────────────────────────────────
+const themeLabels = {etl:'ETL & Pipelines',bi:'BI & DataViz',auto:'Automatisation',infra:'Infra & Orchestration',marketing:'Digital & Marketing'};
+const themeColors = {etl:'badge-blue',bi:'badge-blue',auto:'badge-green',infra:'badge-blue',marketing:'badge-orange'};
+
+function renderProjects(){
+  const el = document.getElementById('projects-list');
+  if(!state.projects.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">🚀</div><p>Aucun projet. Ajoute ton premier projet !</p></div>'; return; }
+  el.innerHTML = state.projects.map(p=>`
+    <div class="list-item">
+      <div class="list-icon icon-blue">${p.icon||'📁'}</div>
+      <div class="list-item-body">
+        <h4>${p.title} ${p.isNew?'<span class="badge badge-green">Nouveau</span>':''}</h4>
+        <p>${p.desc}</p>
+        <div style="margin-top:6px"><span class="badge ${themeColors[p.theme]||'badge-blue'}">${themeLabels[p.theme]||p.theme}</span></div>
+        <div style="margin-top:6px;font-size:0.75rem;color:var(--gray)">${p.stack}</div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-gray" onclick="editProject(${p.id})">✏️</button>
+        <button class="btn btn-danger" onclick="deleteProject(${p.id})">🗑</button>
+      </div>
+    </div>`).join('');
+  updateStats();
+}
+
+function openProjectModal(id=null){
+  const isEdit = id!==null;
+  document.getElementById('modal-project-title').textContent = isEdit?'Modifier le projet':'Nouveau projet';
+  if(isEdit){
+    const p = state.projects.find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('project-edit-id').value = id;
+    document.getElementById('proj-title').value = p.title;
+    document.getElementById('proj-theme').value = p.theme;
+    document.getElementById('proj-desc').value = p.desc;
+    document.getElementById('proj-stack').value = p.stack;
+    document.getElementById('proj-link').value = p.link||'';
+    document.getElementById('proj-icon').value = p.icon||'';
+    document.getElementById('proj-new').value = p.isNew?'true':'false';
+  } else {
+    document.getElementById('project-edit-id').value = '';
+    ['proj-title','proj-desc','proj-stack','proj-link'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('proj-icon').value='🚀';
+    document.getElementById('proj-new').value='false';
+  }
+  openModal('modal-project');
+}
+function editProject(id){ openProjectModal(id); }
+function saveProject(){
+  const editId = document.getElementById('project-edit-id').value;
+  const data = {
+    title: document.getElementById('proj-title').value,
+    theme: document.getElementById('proj-theme').value,
+    desc: document.getElementById('proj-desc').value,
+    stack: document.getElementById('proj-stack').value,
+    link: document.getElementById('proj-link').value,
+    icon: document.getElementById('proj-icon').value||'📁',
+    isNew: document.getElementById('proj-new').value==='true'
+  };
+  if(!data.title){ alert('Le titre est requis'); return; }
+  if(editId){
+    const idx = state.projects.findIndex(p=>p.id===parseInt(editId));
+    if(idx>-1) state.projects[idx] = {...state.projects[idx], ...data};
+  } else {
+    data.id = Date.now();
+    state.projects.push(data);
+  }
+  save(); renderProjects(); closeModal('modal-project');
+  showAlert('projects', editId?'✅ Projet modifié !':'✅ Projet ajouté !');
+}
+function deleteProject(id){
+  if(!confirm('Supprimer ce projet ?')) return;
+  state.projects = state.projects.filter(p=>p.id!==id);
+  save(); renderProjects(); showAlert('projects','🗑 Projet supprimé.','error');
+}
+
+// ── GALLERY ─────────────────────────────────────────────────────
+function renderGallery(){
+  const el = document.getElementById('gallery-list');
+  if(!state.gallery.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">🖼️</div><p>Aucun visuel. Ajoute ta première image !</p></div>'; return; }
+  el.innerHTML = state.gallery.map(g=>`
+    <div class="list-item">
+      <div class="list-icon icon-orange">${g.icon||'🖼️'}</div>
+      <div class="list-item-body">
+        <h4>${g.title}</h4>
+        <p>${g.sub} — ${g.desc.substring(0,80)}...</p>
+        <div style="margin-top:6px"><span class="badge badge-orange">${g.tag}</span> <span style="font-size:0.75rem;color:var(--gray);margin-left:6px">${g.cat}</span></div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-gray" onclick="editGallery(${g.id})">✏️</button>
+        <button class="btn btn-danger" onclick="deleteGallery(${g.id})">🗑</button>
+      </div>
+    </div>`).join('');
+  updateStats();
+}
+function openGalleryModal(id=null){
+  const isEdit = id!==null;
+  document.getElementById('modal-gallery-title').textContent = isEdit?'Modifier le visuel':'Nouveau visuel';
+  if(isEdit){
+    const g = state.gallery.find(x=>x.id===id);
+    if(!g) return;
+    document.getElementById('gallery-edit-id').value = id;
+    document.getElementById('gal-title').value = g.title;
+    document.getElementById('gal-sub').value = g.sub;
+    document.getElementById('gal-desc').value = g.desc;
+    document.getElementById('gal-cat').value = g.cat;
+    document.getElementById('gal-tag').value = g.tag;
+    document.getElementById('gal-icon').value = g.icon;
+    document.getElementById('gal-color').value = g.color;
+    document.getElementById('gal-stack').value = g.stack;
+  } else {
+    document.getElementById('gallery-edit-id').value='';
+    ['gal-title','gal-sub','gal-desc','gal-tag','gal-stack'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('gal-icon').value='📸';
+    document.getElementById('gal-color').value='thumb-blue';
+  }
+  openModal('modal-gallery');
+}
+function editGallery(id){ openGalleryModal(id); }
+function saveGalleryItem(){
+  const editId = document.getElementById('gallery-edit-id').value;
+  const data = {
+    title:document.getElementById('gal-title').value,
+    sub:document.getElementById('gal-sub').value,
+    desc:document.getElementById('gal-desc').value,
+    cat:document.getElementById('gal-cat').value,
+    tag:document.getElementById('gal-tag').value,
+    icon:document.getElementById('gal-icon').value||'📸',
+    color:document.getElementById('gal-color').value,
+    stack:document.getElementById('gal-stack').value,
+  };
+  if(!data.title){ alert('Le titre est requis'); return; }
+  if(editId){
+    const idx = state.gallery.findIndex(g=>g.id===parseInt(editId));
+    if(idx>-1) state.gallery[idx]={...state.gallery[idx],...data};
+  } else { data.id=Date.now(); state.gallery.push(data); }
+  save(); renderGallery(); closeModal('modal-gallery');
+  showAlert('gallery', editId?'✅ Visuel modifié !':'✅ Visuel ajouté !');
+}
+function deleteGallery(id){
+  if(!confirm('Supprimer ce visuel ?')) return;
+  state.gallery = state.gallery.filter(g=>g.id!==id);
+  save(); renderGallery(); showAlert('gallery','🗑 Supprimé.','error');
+}
+
+// ── CERTIFICATIONS ─────────────────────────────────────────────
+function renderCerts(){
+  const el = document.getElementById('certs-list');
+  if(!state.certifications.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">🎓</div><p>Aucune certification.</p></div>'; return; }
+  el.innerHTML = state.certifications.map(c=>`
+    <div class="list-item">
+      <div class="list-icon icon-blue" style="font-size:1.3rem">${c.icon||'🎓'}</div>
+      <div class="list-item-body">
+        <h4>${c.title}</h4>
+        <p>${c.issuer} · ${c.year}</p>
+        <div style="margin-top:6px"><span class="badge ${c.status==='done'?'badge-green':'badge-yellow'}">${c.status==='done'?'Obtenu':'En cours / Prévu'}</span></div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-gray" onclick="editCert(${c.id})">✏️</button>
+        <button class="btn btn-danger" onclick="deleteCert(${c.id})">🗑</button>
+      </div>
+    </div>`).join('');
+  updateStats();
+}
+function openCertModal(id=null){
+  const isEdit=id!==null;
+  document.getElementById('modal-cert-title').textContent=isEdit?'Modifier':'Nouvelle certification';
+  if(isEdit){
+    const c=state.certifications.find(x=>x.id===id);
+    if(!c) return;
+    document.getElementById('cert-edit-id').value=id;
+    document.getElementById('cert-title').value=c.title;
+    document.getElementById('cert-issuer').value=c.issuer;
+    document.getElementById('cert-year').value=c.year;
+    document.getElementById('cert-status').value=c.status;
+    document.getElementById('cert-icon').value=c.icon;
+  } else {
+    document.getElementById('cert-edit-id').value='';
+    ['cert-title','cert-issuer','cert-year'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cert-icon').value='🎓';
+    document.getElementById('cert-status').value='wip';
+  }
+  openModal('modal-cert');
+}
+function editCert(id){ openCertModal(id); }
+function saveCert(){
+  const editId=document.getElementById('cert-edit-id').value;
+  const data={title:document.getElementById('cert-title').value,issuer:document.getElementById('cert-issuer').value,year:document.getElementById('cert-year').value,status:document.getElementById('cert-status').value,icon:document.getElementById('cert-icon').value||'🎓'};
+  if(!data.title){ alert('Le titre est requis'); return; }
+  if(editId){ const idx=state.certifications.findIndex(c=>c.id===parseInt(editId)); if(idx>-1) state.certifications[idx]={...state.certifications[idx],...data}; }
+  else { data.id=Date.now(); state.certifications.push(data); }
+  save(); renderCerts(); closeModal('modal-cert');
+  showAlert('certs',editId?'✅ Modifiée !':'✅ Ajoutée !');
+}
+function deleteCert(id){
+  if(!confirm('Supprimer ?')) return;
+  state.certifications=state.certifications.filter(c=>c.id!==id);
+  save(); renderCerts(); showAlert('certs','🗑 Supprimée.','error');
+}
+
+// ── SKILLS ─────────────────────────────────────────────────────
+const groupLabels={data:'Langages & Data',infra:'Infra & Orchestration',bi:'BI & Visualisation',lowcode:'Low-code & Digital',db:'BDD & Concepts',soft:'Soft skills'};
+function renderSkills(){
+  const el=document.getElementById('skills-list');
+  if(!state.skills.length){ el.innerHTML='<div class="empty-state"><div class="empty-icon">⚡</div><p>Aucune compétence.</p></div>'; return; }
+  const groups={};
+  state.skills.forEach(s=>{ if(!groups[s.group]) groups[s.group]=[]; groups[s.group].push(s); });
+  el.innerHTML=Object.entries(groups).map(([g,items])=>`
+    <div class="card">
+      <div class="section-divider">${groupLabels[g]||g}</div>
+      ${items.map(s=>`
+        <div class="list-item" style="padding:0.6rem 0.75rem;margin-bottom:0.5rem">
+          <div class="list-item-body">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:0.88rem;font-weight:500">${s.name}</span>
+              <span style="font-size:0.8rem;color:var(--blue);font-weight:600">${s.level}%</span>
+            </div>
+            <div style="height:5px;background:var(--border);border-radius:100px;margin-top:6px;overflow:hidden">
+              <div style="height:100%;width:${s.level}%;background:var(--blue);border-radius:100px"></div>
+            </div>
+          </div>
+          <div class="list-item-actions" style="margin-left:0.75rem">
+            <button class="btn btn-danger" style="padding:4px 8px" onclick="deleteSkill(${s.id})">🗑</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+  updateStats();
+}
+function openSkillModal(){ openModal('modal-skill'); document.getElementById('skill-name').value=''; document.getElementById('skill-level').value='70'; }
+function saveSkill(){
+  const name=document.getElementById('skill-name').value;
+  const level=parseInt(document.getElementById('skill-level').value)||70;
+  const group=document.getElementById('skill-group').value;
+  if(!name){ alert('Nom requis'); return; }
+  state.skills.push({id:Date.now(),name,group,level});
+  save(); renderSkills(); closeModal('modal-skill');
+  showAlert('skills','✅ Compétence ajoutée !');
+}
+function deleteSkill(id){
+  if(!confirm('Supprimer ?')) return;
+  state.skills=state.skills.filter(s=>s.id!==id);
+  save(); renderSkills(); showAlert('skills','🗑 Supprimée.','error');
+}
+
+// ── GLOBAL ─────────────────────────────────────────────────────
+function saveAll(){
+  saveProfile();
+  state.cv={url:document.getElementById('cv-url').value,filename:document.getElementById('cv-filename').value};
+  save();
+  showAlert('global','✅ Toutes les données sauvegardées ! Recharge le portfolio pour voir les changements.');
+}
+function resetAll(){
+  if(!confirm('Réinitialiser toutes les données ? Cette action est irréversible.')) return;
+  localStorage.removeItem('portfolio_data');
+  state=JSON.parse(JSON.stringify(DEFAULTS));
+  fillProfile(); fillCV(); renderProjects(); renderGallery(); renderCerts(); renderSkills(); updateStats();
+  showAlert('global','↺ Données réinitialisées.');
+}
+
+load();
+</script>
+</body>
+</html>
